@@ -22,6 +22,9 @@ class Ui_MainWindow
 public:
     QWidget *centralwidget;
     QLabel *lbBackground;
+    QLabel *lbMid;
+    QLabel *lbTop;
+    QLabel *lbBot;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -34,8 +37,31 @@ public:
         lbBackground = new QLabel(centralwidget);
         lbBackground->setObjectName(QString::fromUtf8("lbBackground"));
         lbBackground->setGeometry(QRect(0, 0, 960, 540));
+        lbBackground->setPixmap(QPixmap(QString::fromUtf8(":/pic/background_pic_1.jpg")));
         lbBackground->setScaledContents(true);
+        lbMid = new QLabel(centralwidget);
+        lbMid->setObjectName(QString::fromUtf8("lbMid"));
+        lbMid->setEnabled(false);
+        lbMid->setGeometry(QRect(190, 140, 580, 220));
+        lbMid->setFrameShape(QFrame::NoFrame);
+        lbMid->setAlignment(Qt::AlignCenter);
+        lbTop = new QLabel(centralwidget);
+        lbTop->setObjectName(QString::fromUtf8("lbTop"));
+        lbTop->setEnabled(false);
+        lbTop->setGeometry(QRect(280, 20, 400, 120));
+        lbTop->setFrameShape(QFrame::NoFrame);
+        lbTop->setAlignment(Qt::AlignCenter);
+        lbBot = new QLabel(centralwidget);
+        lbBot->setObjectName(QString::fromUtf8("lbBot"));
+        lbBot->setEnabled(false);
+        lbBot->setGeometry(QRect(300, 360, 360, 130));
+        lbBot->setFrameShape(QFrame::NoFrame);
+        lbBot->setAlignment(Qt::AlignCenter);
         MainWindow->setCentralWidget(centralwidget);
+        lbMid->raise();
+        lbTop->raise();
+        lbBot->raise();
+        lbBackground->raise();
 
         retranslateUi(MainWindow);
 
@@ -46,6 +72,9 @@ public:
     {
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
         lbBackground->setText(QString());
+        lbMid->setText(QCoreApplication::translate("MainWindow", "\344\270\255", nullptr));
+        lbTop->setText(QCoreApplication::translate("MainWindow", "\344\270\212", nullptr));
+        lbBot->setText(QCoreApplication::translate("MainWindow", "\344\270\213", nullptr));
     } // retranslateUi
 
 };

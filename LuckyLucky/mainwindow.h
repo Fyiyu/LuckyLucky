@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QPainter>
+#include <QFont>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -12,7 +14,29 @@ typedef struct
     int index;
     QString name;
     int cnt;
+
+    QString font;
+    int font_size;
+    int R;
+    int G;
+    int B;
+    int x;
+    int y;
 } luckyItem_t;
+
+typedef enum
+{
+    STARTUP = 0,
+    ONE,
+    TWO,
+    THREE,
+    FOUR,
+    FIVE,
+    SEX,
+    SEVEN,
+    EIGHT,
+    NINE,
+} luckyStep_t;
 
 class MainWindow : public QMainWindow
 {
@@ -23,21 +47,31 @@ public:
     ~MainWindow();
 
 protected:
-    virtual void keyPressEvent(QKeyEvent *ev);
-
+    void keyPressEvent(QKeyEvent *ev);
+    void mouseMoveEvent(QMouseEvent *e);
+    void mousePressEvent(QMouseEvent *e);
+    void mouseReleaseEvent(QMouseEvent *);
 private slots:
     void timeUpdate(void);
 
 private:
+    void show_item(luckyItem_t item);
+
+private:
     Ui::MainWindow *ui;
     QTimer *timer;
+    QPainter painter;
+
+    QPoint mousePoint;
+    QRect location;
+    bool mousePressed;
     bool isWindowMax;
     bool isError;
-    bool isWindowShow;
-    int ShowDelayCnt;
+    bool isShowCross;
+    bool isShow;
 
-    QString Title;
     QVector<luckyItem_t> luckyItems;
+    luckyStep_t luckyStep;
 
     QImage bgimage;
 };
