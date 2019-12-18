@@ -12,31 +12,40 @@ QT_END_NAMESPACE
 typedef struct
 {
     int index;
-    QString name;
-    int cnt;
+    int wx_included;
 
-    QString font;
-    int font_size;
-    int R;
-    int G;
-    int B;
-    int x;
-    int y;
+    QString name;
+    QString name_font;
+    int name_font_size;
+    int name_R;
+    int name_G;
+    int name_B;
+    int name_x;
+    int name_y;
+
+    int count_number;
+    QString count;
+    QString count_font;
+    int count_font_size;
+    int count_R;
+    int count_G;
+    int count_B;
+    int count_x;
+    int count_y;
 } luckyItem_t;
+
+typedef struct
+{
+    QString name;
+    QString id;
+} nameList_t;
 
 typedef enum
 {
-    STARTUP = 0,
-    ONE,
-    TWO,
-    THREE,
-    FOUR,
-    FIVE,
-    SEX,
-    SEVEN,
-    EIGHT,
-    NINE,
-} luckyStep_t;
+    NORMAL = 0,
+    ROLL,
+    STOP,
+} State_t;
 
 class MainWindow : public QMainWindow
 {
@@ -56,6 +65,10 @@ private slots:
 
 private:
     void show_item(luckyItem_t item);
+    void show_roll(luckyItem_t item);
+    void show_result(luckyItem_t item);
+    bool import_config(void);
+    bool import_name(void);
 
 private:
     Ui::MainWindow *ui;
@@ -71,7 +84,11 @@ private:
     bool isShow;
 
     QVector<luckyItem_t> luckyItems;
-    luckyStep_t luckyStep;
+    QVector<nameList_t> nameList_tdtech;
+    QVector<nameList_t> nameList_wx;
+    QVector<nameList_t> nameList_lucky;
+    int luckyStep;
+    State_t state;
 
     QImage bgimage;
 };
