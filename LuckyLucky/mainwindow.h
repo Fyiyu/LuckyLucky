@@ -38,7 +38,14 @@ typedef struct
 {
     QString name;
     QString id;
+    bool flag;
 } nameList_t;
+
+typedef struct
+{
+    int x;
+    int y;
+} point_t;
 
 typedef enum
 {
