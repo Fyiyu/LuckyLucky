@@ -74,8 +74,9 @@ private:
     void show_item(luckyItem_t item);
     void show_roll(luckyItem_t item);
     void show_result(luckyItem_t item);
+    void show_namelist(int count, bool isSave);
     bool import_config(void);
-    bool import_name(void);
+    bool import_name(bool includeWx);
 
 private:
     Ui::MainWindow *ui;

@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QTextCodec>
 #include <QPixmap>
+#include <QDir>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -25,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(timeUpdate()));
-    timer->start(100);
+    timer->start(50);
     QTime time;
     time= QTime::currentTime();
     qsrand(time.msec()+time.second()*1000);
@@ -62,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     // 加载名单文件
-    if (!import_name())
+    if (!import_name(true))
     {
         qDebug("Load name file failed.");
         QMessageBox::critical(this,"Error","can not load name file.",QMessageBox::Yes);
@@ -137,7 +138,14 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
     case Qt::Key_9: if (state != ROLL) { state = NORMAL; luckyStep = 9; show_item(luckyItems.at((int)luckyStep)); timer->stop();} break;
     case Qt::Key_F6: isShowCross = !isShowCross; break;
     case Qt::Key_F5: isShow = false; import_config(); isShow = true; break;
-    case Qt::Key_Enter: state = (luckyStep == 0) ? NORMAL : ((state == NORMAL) ? ROLL : STOP); if(state == STOP) timer->stop(); else timer->start(100); break;
+    case Qt::Key_F4: import_name(true); break;
+    case Qt::Key_Enter:
+        if (luckyStep != 0)
+        {
+            state = (state == NORMAL) ? ROLL : STOP;
+            if(state != STOP) timer->start(50);
+        }
+        break;
     default: break;
     }
 
@@ -203,7 +211,7 @@ bool MainWindow::import_config()
     return true;
 }
 
-bool MainWindow::import_name()
+bool MainWindow::import_name(bool includeWx)
 {
     QString line;
     QTextCodec *codec=QTextCodec::codecForName("GBK");
@@ -218,7 +226,7 @@ bool MainWindow::import_name()
     else
     {
         nameList_tdtech.clear();
-        nameList_wx.clear();
+        if (includeWx) nameList_wx.clear();
         QTextStream floStream(&fName);
         floStream.setCodec(codec);
         while ( floStream.atEnd()==0 )
@@ -237,7 +245,7 @@ bool MainWindow::import_name()
             }
             else
             {
-                nameList_wx.append(nameList);
+                if (includeWx) nameList_wx.append(nameList);
             }
         }
         qDebug()<<"tdtech cnt is "<<QString::number(nameList_tdtech.count())<<", wx cnt is "<<QString::number(nameList_wx.count());
@@ -260,6 +268,7 @@ void MainWindow::timeUpdate()
         break;
     case STOP:
         show_result(luckyItems.at((int)luckyStep));
+        timer->stop();
         break;
     default:
         break;
@@ -290,7 +299,7 @@ void MainWindow::show_item(luckyItem_t item)
     ui->lbBackground->setPixmap(pixmap);
 }
 
-const point_t points[30] =
+point_t points_30[30] =
 {
           {470,200}, {820, 200}, {1170, 200},
           {470,300}, {820, 300}, {1170, 300},
@@ -303,13 +312,102 @@ const point_t points[30] =
                {720, 1000}, {1020, 1000}
 };
 
-void MainWindow::show_roll(luckyItem_t item)
+point_t points_5[5] =
+{
+          {400,500}, {800, 500}, {1200, 500},
+               {600, 650}, {1000, 650}
+};
+
+point_t points_3[3] =
+{
+          {400,540}, {800, 540}, {1200, 540}
+};
+
+point_t points_1[1] =
+{
+                      {760, 540}
+};
+
+void MainWindow::show_namelist(int count, bool isSave)
 {
     QImage image = bgimage;
     painter.begin(&image);
 
+    //绘制选中名单
+    QFont luckyFont = QFont("隶书", 50);;
+    point_t *pp = points_30;
+    int xoffset = 50;
+
+    if (count == 30)
+    {
+        luckyFont = QFont("隶书", 50);
+        xoffset = 50;
+        pp = points_30;
+    }
+    else if (count == 5)
+    {
+        luckyFont = QFont("隶书", 80);
+        xoffset = 80;
+        pp = points_5;
+    }
+    else if (count == 3)
+    {
+        luckyFont = QFont("隶书", 80);
+        xoffset = 80;
+        pp = points_3;
+    }
+    else if (count == 1)
+    {
+        luckyFont = QFont("隶书", 100);
+        xoffset = 100;
+        pp = points_1;
+    }
+
+    painter.setPen(QColor(249, 206, 7));
+    painter.setFont(luckyFont);
+    for (int i=0; i<count; i++)
+    {
+        if (nameList_lucky.at(i).name.length() == 2)
+        {
+            painter.drawText(pp[i].x+xoffset, pp[i].y, nameList_lucky.at(i).name);
+        }
+        else
+        {
+            painter.drawText(pp[i].x, pp[i].y, nameList_lucky.at(i).name);
+        }
+    }
+
+    painter.end();
+    QPixmap pixmap = QPixmap::fromImage(image);
+    ui->lbBackground->setPixmap(pixmap);
+
+    if (isSave)
+    {
+        QDateTime current_time = QDateTime::currentDateTime();
+        QString StrCurrentTime = current_time.toString("_yyyyMMddhhmmss");
+        QString imagePath = QCoreApplication::applicationDirPath();
+        QString imageFile = imagePath + "/result/"+luckyItems.at(luckyStep).name+StrCurrentTime+".jpg";
+
+        QDir dir;
+        if (!dir.exists(imagePath+"/result"))
+        {
+            dir.mkpath(imagePath+"/result");
+        }
+
+        image.save(imageFile, "JPG", 100);
+    }
+}
+
+void MainWindow::show_roll(luckyItem_t item)
+{
     int count = item.count_number;
     int total_count = (!item.wx_included) ? nameList_tdtech.count() : nameList_tdtech.count() + nameList_wx.count();
+    if (total_count < count)
+    {
+        import_name(false);
+        total_count = nameList_tdtech.count();
+    }
+
     int randnum;
     QSet<int> lucky_set, point_set;
 
@@ -326,17 +424,8 @@ void MainWindow::show_roll(luckyItem_t item)
             i++;
         }
     }
-//    for (int i=0; i<count;)
-//    {
-//        randnum = qrand() % 30;
-//        if(!point_set.contains(randnum))
-//        {
-//            point_set.insert(randnum);
-//            i++;
-//        }
-//    }
+
     QList<int> lucky_list = lucky_set.values();
-//    QList<int> point_list = point_set.values();
 
     //将随机数对应的名单复制到lucky对象中
     for (int i=0; i<count; i++)
@@ -351,23 +440,34 @@ void MainWindow::show_roll(luckyItem_t item)
         }
     }
 
-    //绘制选中名单
-    painter.setPen(QColor(item.count_R, item.count_G, item.count_B));
-    painter.setFont(QFont("隶书", 50));
-    for (int i=0; i<count; i++)
-    {
-        painter.drawText(points[i].x, points[i].y, nameList_lucky.at(i).name);
-    }
-
-    painter.end();
-    QPixmap pixmap = QPixmap::fromImage(image);
-    ui->lbBackground->setPixmap(pixmap);
+    show_namelist(count, false);
 }
 
 void MainWindow::show_result(luckyItem_t item)
 {
     (void)item;
-//    painter.setPen(QColor(item.name_R, item.name_G, item.name_B));
-//    painter.setFont(QFont(item.name_font, item.name_font_size));
-//    painter.drawText(item.name_x,item.name_y, "结果页面");
+
+
+    for (int i=0; i<nameList_lucky.count(); i++)
+    {
+        for (int j=0; j<nameList_tdtech.count(); j++)
+        {
+            if (nameList_tdtech.at(j).id == nameList_lucky.at(i).id)
+            {
+                nameList_tdtech.removeAt(j);
+                break;
+            }
+        }
+        for (int j=0; j<nameList_wx.count(); j++)
+        {
+            if (nameList_wx.at(j).id == nameList_lucky.at(i).id)
+            {
+                nameList_wx.removeAt(j);
+                break;
+            }
+        }
+    }
+    show_namelist(nameList_lucky.count(), true);
+
+    qDebug()<<"tdtech cnt is "<<QString::number(nameList_tdtech.count())<<", wx cnt is "<<QString::number(nameList_wx.count());
 }
