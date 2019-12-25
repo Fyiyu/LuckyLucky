@@ -301,14 +301,14 @@ void MainWindow::show_item(luckyItem_t item)
 
 point_t points_30[30] =
 {
-          {470,200}, {820, 200}, {1170, 200},
-          {470,300}, {820, 300}, {1170, 300},
+          {520,200}, {860, 200}, {1170, 200},
+          {520,300}, {860, 300}, {1170, 300},
     {370,400}, {720, 400}, {1020, 400}, {1320, 400},
     {370,500}, {720, 500}, {1020, 500}, {1320, 500},
     {370,600}, {720, 600}, {1020, 600}, {1320, 600},
     {370,700}, {720, 700}, {1020, 700}, {1320, 700},
-          {470,800}, {820, 800}, {1170, 800},
-          {470,900}, {820, 900}, {1170, 900},
+          {520,800}, {860, 800}, {1170, 800},
+          {520,900}, {860, 900}, {1170, 900},
                {720, 1000}, {1020, 1000}
 };
 
@@ -333,33 +333,46 @@ void MainWindow::show_namelist(int count, bool isSave)
     QImage image = bgimage;
     painter.begin(&image);
 
+    if (isShowCross)
+    {
+        painter.setPen(QColor(182,0,7));
+        painter.drawLine(960,0, 960, 1080);
+        painter.drawLine(0,540,1920,540);
+    }
+
+    //绘制标题
+    painter.setPen(QColor(249, 206, 7));
+    painter.setFont(QFont("隶书", 50));
+    QString title = luckyItems.at(luckyStep).name;
+    painter.drawText(960 -99 - 35 * title.length(), 70, "--<"+title+">--");
+
     //绘制选中名单
-    QFont luckyFont = QFont("隶书", 50);;
+    QFont luckyFont = QFont("隶书", 50);
     point_t *pp = points_30;
     int xoffset = 50;
 
     if (count == 30)
     {
         luckyFont = QFont("隶书", 50);
-        xoffset = 50;
+        xoffset = 30;
         pp = points_30;
     }
     else if (count == 5)
     {
         luckyFont = QFont("隶书", 80);
-        xoffset = 80;
+        xoffset = 48;
         pp = points_5;
     }
     else if (count == 3)
     {
         luckyFont = QFont("隶书", 80);
-        xoffset = 80;
+        xoffset = 48;
         pp = points_3;
     }
     else if (count == 1)
     {
         luckyFont = QFont("隶书", 100);
-        xoffset = 100;
+        xoffset = 60;
         pp = points_1;
     }
 
