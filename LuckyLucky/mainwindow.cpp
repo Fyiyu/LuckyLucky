@@ -136,9 +136,13 @@ void MainWindow::keyPressEvent(QKeyEvent *ev)
     case Qt::Key_7: if (state != ROLL) { state = NORMAL; luckyStep = 7; show_item(luckyItems.at((int)luckyStep)); timer->stop();} break;
     case Qt::Key_8: if (state != ROLL) { state = NORMAL; luckyStep = 8; show_item(luckyItems.at((int)luckyStep)); timer->stop();} break;
     case Qt::Key_9: if (state != ROLL) { state = NORMAL; luckyStep = 9; show_item(luckyItems.at((int)luckyStep)); timer->stop();} break;
-    case Qt::Key_F6: isShowCross = !isShowCross; break;
-    case Qt::Key_F5: isShow = false; import_config(); isShow = true; break;
+    case Qt::Key_F6: isShowCross = !isShowCross;  break;
+    case Qt::Key_F5:
+        isShow = false; import_config(); isShow = true;
+        if (state != ROLL) { state = NORMAL; luckyStep = 0; show_item(luckyItems.at((int)luckyStep)); timer->stop();}
+        break;
     case Qt::Key_F4: import_name(true); break;
+    case Qt::Key_Return:
     case Qt::Key_Enter:
         if (luckyStep != 0)
         {
@@ -176,7 +180,10 @@ bool MainWindow::import_config()
         {
             i = 0;
             line = floStream.readLine();
-            QStringList list = line.split("\t");
+            if(line.isEmpty())
+                continue;
+            line.replace(QRegExp("[\\s]+"), " ");
+            QStringList list = line.split(" ");
             luckyItem_t luckyItem;
 
             luckyItem.index = list[i++].toInt();
@@ -232,7 +239,10 @@ bool MainWindow::import_name(bool includeWx)
         while ( floStream.atEnd()==0 )
         {
             line = floStream.readLine();
-            QStringList list = line.split("\t");
+            if(line.isEmpty())
+                continue;
+            line.replace(QRegExp("[\\s]+"), " ");
+            QStringList list = line.split(" ");
             nameList_t nameList;
 
             int type = list[0].toInt();
@@ -323,9 +333,14 @@ point_t points_3[3] =
           {400,540}, {800, 540}, {1200, 540}
 };
 
+point_t points_2[2] =
+{
+                {500, 540}, {1000, 540}
+};
+
 point_t points_1[1] =
 {
-                      {760, 540}
+                      {725, 540}
 };
 
 void MainWindow::show_namelist(int count, bool isSave)
@@ -369,10 +384,16 @@ void MainWindow::show_namelist(int count, bool isSave)
         xoffset = 48;
         pp = points_3;
     }
-    else if (count == 1)
+    else if (count == 2)
     {
         luckyFont = QFont("隶书", 100);
         xoffset = 60;
+        pp = points_2;
+    }
+    else if (count == 1)
+    {
+        luckyFont = QFont("隶书", 120);
+        xoffset = 75;
         pp = points_1;
     }
 
